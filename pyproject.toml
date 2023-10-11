@@ -1,0 +1,46 @@
+[build-system]
+requires = ["maturin>=1.2,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "url-py"
+description = "Python bindings to Rust's url crate (from Servo)"
+readme = "README.rst"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+keywords = ["data structures", "rust", "persistent"]
+authors = [
+  {email = "Julian+url-py@GrayVines.com"},
+  {name = "Julian Berman"},
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+[project.urls]
+Homepage = "https://github.com/crate-py/url"
+Issues = "https://github.com/crate-py/url/issues/"
+Funding = "https://github.com/sponsors/Julian"
+Source = "https://github.com/crate-py/url"
+
+[tool.isort]
+combine_as_imports = true
+from_first = true
+include_trailing_comma = true
+multi_line_output = 3
+known_first_party = ["url"]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]

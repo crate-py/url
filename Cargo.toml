@@ -1,0 +1,15 @@
+[package]
+name = "url-py"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "url"
+crate-type = ["cdylib"]
+
+[dependencies]
+url = "2"
+
+[dependencies.pyo3]
+version = "0.19.2"
+features = ["extension-module"]
