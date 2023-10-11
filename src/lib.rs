@@ -1,14 +1,30 @@
-use pyo3::prelude::*;
+use pyo3::{create_exception, prelude::*, types::PyType};
+use url::Url;
 
-/// Formats the sum of two numbers as string.
-#[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
+create_exception!(url, URLError, pyo3::exceptions::PyException);
+
+#[repr(transparent)]
+#[pyclass(name = "URL", module = "url", frozen)]
+struct UrlPy {
+    #[allow(dead_code)]
+    inner: Url,
 }
 
-/// A Python module implemented in Rust.
+#[pymethods]
+impl UrlPy {
+    #[classmethod]
+    fn parse(_cls: &PyType, value: &str) -> PyResult<UrlPy> {
+        match Url::parse(value) {
+            Ok(inner) => Ok(UrlPy { inner }),
+            Err(e) => Err(URLError::new_err(e.to_string())),
+        }
+    }
+}
+
 #[pymodule]
-fn url(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+#[pyo3(name = "url")]
+fn url_py(py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<UrlPy>()?;
+    m.add("URLError", py.get_type::<URLError>())?;
     Ok(())
 }
