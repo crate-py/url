@@ -44,3 +44,44 @@ known_first_party = ["url"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+
+[tool.ruff]
+line-length = 79
+target-version = "py38"
+select = ["ANN", "B", "D", "D204", "E", "F", "Q", "RUF", "SIM", "UP", "W"]
+ignore = [
+  # Wat, type annotations for self and cls, why is this a thing?
+  "ANN101",
+  "ANN102",
+  # Private annotations are fine to leave out.
+  "ANN202",
+  # I don't know how to more properly annotate "pass along all arguments".
+  "ANN401",
+  # raise SomeException(...) is fine.
+  "B904",
+  # It's fine to not have docstrings for magic methods.
+  "D105",
+  # This rule makes diffs uglier when expanding docstrings (and it's uglier)
+  "D200",
+  # No blank lines before docstrings.
+  "D203",
+  # Start docstrings on the second line.
+  "D212",
+  # This rule misses sassy docstrings ending with ! or ?.
+  "D400",
+  # Section headers should end with a colon not a newline
+  "D406",
+  # Underlines aren't needed
+  "D407",
+  # Plz spaces after section headers
+  "D412",
+  # We support 3.8 + 3.9
+  "UP007",
+]
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["ANN", "D", "RUF012"]
+"noxfile.py" = ["ANN", "D100"]
