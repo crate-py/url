@@ -1,12 +1,13 @@
+"""
+Many of the tests follows the examples from the crate README.
+"""
+
 import pytest
 
 from url import URL, URLError
 
 
-def test_valid():
-    """
-    Follows the example from the crate README.
-    """
+def test_https_url():
     issue_url = URL.parse(
         "https://github.com/rust-lang/rust/issues?labels=E-easy&state=open",
     )
@@ -30,6 +31,16 @@ def test_valid():
 
     assert issue_url.fragment is None
     assert not issue_url.cannot_be_a_base
+
+
+def test_cannot_be_a_base_url():
+    data_url = URL.parse("data:text/plain,Hello?World#")
+    assert data_url.cannot_be_a_base
+    assert data_url.scheme == "data"
+    assert data_url.path == "text/plain,Hello"
+    assert data_url.path_segments is None
+    assert data_url.query == "World"
+    assert data_url.fragment == ""
 
 
 def test_invalid():
