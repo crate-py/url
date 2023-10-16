@@ -43,6 +43,12 @@ def test_cannot_be_a_base_url():
     assert data_url.fragment == ""
 
 
+def test_join():
+    this_document = URL.parse("http://servo.github.io/rust-url/url/index.html")
+    css_url = this_document.join("../main.css")
+    assert str(css_url) == "http://servo.github.io/rust-url/main.css"
+
+
 def test_invalid_ipv6_address():
     with pytest.raises(InvalidIPv6Address):
         URL.parse("http://[:::1]")

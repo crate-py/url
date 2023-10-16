@@ -19,35 +19,41 @@ struct UrlPy {
     inner: Url,
 }
 
+fn from_result(value: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
+    match value {
+        Ok(inner) => Ok(UrlPy { inner }),
+        Err(e) => Err(match e {
+            ParseError::EmptyHost => EmptyHost::new_err(e.to_string()),
+            ParseError::IdnaError => IdnaError::new_err(e.to_string()),
+            ParseError::InvalidPort => InvalidPort::new_err(e.to_string()),
+            ParseError::InvalidIpv4Address => InvalidIPv4Address::new_err(e.to_string()),
+            ParseError::InvalidIpv6Address => InvalidIPv6Address::new_err(e.to_string()),
+            ParseError::InvalidDomainCharacter => InvalidDomainCharacter::new_err(e.to_string()),
+            ParseError::RelativeUrlWithoutBase => RelativeURLWithoutBase::new_err(e.to_string()),
+            ParseError::RelativeUrlWithCannotBeABaseBase => {
+                RelativeURLWithCannotBeABaseBase::new_err(e.to_string())
+            }
+            ParseError::SetHostOnCannotBeABaseUrl => {
+                SetHostOnCannotBeABaseURL::new_err(e.to_string())
+            }
+            _ => URLError::new_err(e.to_string()),
+        }),
+    }
+}
+
 #[pymethods]
 impl UrlPy {
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+
     #[classmethod]
     fn parse(_cls: &PyType, value: &str) -> PyResult<UrlPy> {
-        match Url::parse(value) {
-            Ok(inner) => Ok(UrlPy { inner }),
-            Err(ParseError::EmptyHost) => Err(EmptyHost::new_err(value.to_string())),
-            Err(ParseError::IdnaError) => Err(IdnaError::new_err(value.to_string())),
-            Err(ParseError::InvalidPort) => Err(InvalidPort::new_err(value.to_string())),
-            Err(ParseError::InvalidIpv4Address) => {
-                Err(InvalidIPv4Address::new_err(value.to_string()))
-            }
-            Err(ParseError::InvalidIpv6Address) => {
-                Err(InvalidIPv6Address::new_err(value.to_string()))
-            }
-            Err(ParseError::InvalidDomainCharacter) => {
-                Err(InvalidDomainCharacter::new_err(value.to_string()))
-            }
-            Err(ParseError::RelativeUrlWithoutBase) => {
-                Err(RelativeURLWithoutBase::new_err(value.to_string()))
-            }
-            Err(ParseError::RelativeUrlWithCannotBeABaseBase) => {
-                Err(RelativeURLWithCannotBeABaseBase::new_err(value.to_string()))
-            }
-            Err(ParseError::SetHostOnCannotBeABaseUrl) => {
-                Err(SetHostOnCannotBeABaseURL::new_err(value.to_string()))
-            }
-            Err(e) => Err(URLError::new_err(e.to_string())),
-        }
+        from_result(Url::parse(value))
+    }
+
+    fn join(&self, input: &str) -> PyResult<UrlPy> {
+        from_result(self.inner.join(input))
     }
 
     #[getter]
