@@ -4,7 +4,7 @@ Many of the tests follows the examples from the crate README.
 
 import pytest
 
-from url import URL, URLError
+from url import URL, InvalidIPv6Address, RelativeURLWithoutBase, URLError
 
 
 def test_https_url():
@@ -43,6 +43,16 @@ def test_cannot_be_a_base_url():
     assert data_url.fragment == ""
 
 
-def test_invalid():
-    with pytest.raises(URLError, match="empty host"):
+def test_invalid_ipv6_address():
+    with pytest.raises(InvalidIPv6Address):
+        URL.parse("http://[:::1]")
+
+
+def test_invalid_relative_url_without_base():
+    with pytest.raises(RelativeURLWithoutBase):
+        URL.parse("../main.css")
+
+
+def test_invalid_junk():
+    with pytest.raises(URLError):
         URL.parse("https:/12949a;df;;@@@")
