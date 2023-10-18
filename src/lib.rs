@@ -47,6 +47,10 @@ impl UrlPy {
         self.inner.to_string()
     }
 
+    fn __truediv__(&self, other: &str) -> PyResult<Self> {
+        self.join(other)
+    }
+
     #[classmethod]
     fn parse(_cls: &PyType, value: &str) -> PyResult<UrlPy> {
         from_result(Url::parse(value))
