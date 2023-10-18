@@ -15,6 +15,7 @@ env/
 bin/
 build/
 develop-eggs/
+dirhtml/
 dist/
 eggs/
 lib/

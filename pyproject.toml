@@ -30,10 +30,17 @@ classifiers = [
 ]
 
 [project.urls]
+Documentation = "https://url-py.readthedocs.io/"
 Homepage = "https://github.com/crate-py/url"
 Issues = "https://github.com/crate-py/url/issues/"
 Funding = "https://github.com/sponsors/Julian"
 Source = "https://github.com/crate-py/url"
+
+[tool.doc8]
+ignore = [
+    "D000",  # see PyCQA/doc8#125
+    "D001",  # one sentence per line, so max length doesn't make sense
+]
 
 [tool.isort]
 combine_as_imports = true
@@ -91,5 +98,6 @@ ignore = [
 docstring-quotes = "double"
 
 [tool.ruff.per-file-ignores]
+"docs/*" = ["ANN", "D"]
 "tests/*" = ["ANN", "D", "RUF012"]
 "noxfile.py" = ["ANN", "D100"]
