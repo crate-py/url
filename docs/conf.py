@@ -44,8 +44,8 @@ def entire_domain(host):
 linkcheck_ignore = [
     entire_domain("img.shields.io"),
     f"{GITHUB}.*#.*",
-    str(HOMEPAGE.join("actions")),
-    str(HOMEPAGE.join("workflows/CI/badge.svg")),
+    str(HOMEPAGE / "actions"),
+    str(HOMEPAGE / "workflows/CI/badge.svg"),
 ]
 
 # = Extensions =
