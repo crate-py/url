@@ -1,4 +1,6 @@
-use pyo3::{create_exception, exceptions::PyException, prelude::*, types::PyType};
+use pyo3::{
+    create_exception, exceptions::PyException, prelude::*, pyclass::CompareOp, types::PyType,
+};
 use url::{ParseError, Url};
 
 create_exception!(url, URLError, PyException);
@@ -47,16 +49,24 @@ impl UrlPy {
         self.inner.to_string()
     }
 
+    fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
+        match op {
+            CompareOp::Eq => (self.inner == other.inner).into_py(py),
+            CompareOp::Ne => (self.inner != other.inner).into_py(py),
+            _ => py.NotImplemented(),
+        }
+    }
+
     fn __truediv__(&self, other: &str) -> PyResult<Self> {
         self.join(other)
     }
 
     #[classmethod]
-    fn parse(_cls: &PyType, value: &str) -> PyResult<UrlPy> {
+    fn parse(_cls: &PyType, value: &str) -> PyResult<Self> {
         from_result(Url::parse(value))
     }
 
-    fn join(&self, input: &str) -> PyResult<UrlPy> {
+    fn join(&self, input: &str) -> PyResult<Self> {
         from_result(self.inner.join(input))
     }
 

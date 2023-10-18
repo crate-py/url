@@ -71,3 +71,11 @@ def test_invalid_relative_url_without_base():
 def test_invalid_junk():
     with pytest.raises(URLError):
         URL.parse("https:/12949a;df;;@@@")
+
+
+def test_eq():
+    """
+    Support the / operator as many Python types have decided to.
+    """
+    assert URL.parse("http://example.com") == URL.parse("http://example.com")
+    assert URL.parse("http://foo.com") != URL.parse("http://bar.com")
