@@ -76,6 +76,14 @@ impl UrlPy {
     }
 
     #[getter]
+    fn host(&self) -> Option<HostPy> {
+        let host = self.inner.host()?;
+        Some(HostPy {
+            inner: host.to_owned(),
+        })
+    }
+
+    #[getter]
     fn username(&self) -> &str {
         self.inner.username()
     }
@@ -122,10 +130,35 @@ impl UrlPy {
     }
 }
 
+#[repr(transparent)]
+#[pyclass(name = "Domain", module = "url", frozen)]
+struct HostPy {
+    inner: url::Host,
+}
+
+#[pymethods]
+impl HostPy {
+    #[new]
+    fn new(value: String) -> Self {
+        Self {
+            inner: url::Host::Domain(value),
+        }
+    }
+
+    fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
+        match op {
+            CompareOp::Eq => (self.inner == other.inner).into_py(py),
+            CompareOp::Ne => (self.inner != other.inner).into_py(py),
+            _ => py.NotImplemented(),
+        }
+    }
+}
+
 #[pymodule]
 #[pyo3(name = "url")]
 fn url_py(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<UrlPy>()?;
+    m.add_class::<HostPy>()?;
 
     m.add("URLError", py.get_type::<URLError>())?;
     m.add("EmptyHost", py.get_type::<EmptyHost>())?;

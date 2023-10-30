@@ -4,7 +4,8 @@ Many of the tests follows the examples from the crate README.
 
 import pytest
 
-from url import URL, InvalidIPv6Address, RelativeURLWithoutBase, URLError
+from url import URL
+import url
 
 
 def test_https_url():
@@ -16,9 +17,7 @@ def test_https_url():
     assert issue_url.password is None
     assert issue_url.host_str == "github.com"
 
-    # TODO: Decide what API makes sense here in Python --
-    #       get back an IP address and otherwise error, or some other API
-    # assert (issue_url.host() == Some(Host::Domain("github.com")))
+    assert issue_url.host == url.Domain("github.com")
 
     assert issue_url.port is None
     assert issue_url.path == "/rust-lang/rust/issues"
@@ -59,17 +58,17 @@ def test_slash():
 
 
 def test_invalid_ipv6_address():
-    with pytest.raises(InvalidIPv6Address):
+    with pytest.raises(url.InvalidIPv6Address):
         URL.parse("http://[:::1]")
 
 
 def test_invalid_relative_url_without_base():
-    with pytest.raises(RelativeURLWithoutBase):
+    with pytest.raises(url.RelativeURLWithoutBase):
         URL.parse("../main.css")
 
 
 def test_invalid_junk():
-    with pytest.raises(URLError):
+    with pytest.raises(url.URLError):
         URL.parse("https:/12949a;df;;@@@")
 
 
