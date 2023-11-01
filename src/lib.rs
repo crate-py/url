@@ -45,8 +45,8 @@ fn from_result(input: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
 
 #[pymethods]
 impl UrlPy {
-    fn __str__(&self) -> String {
-        self.inner.to_string()
+    fn __str__(&self) -> &str {
+        self.inner.as_str()
     }
 
     fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
@@ -79,6 +79,10 @@ impl UrlPy {
 
     fn join(&self, input: &str) -> PyResult<Self> {
         from_result(self.inner.join(input))
+    }
+
+    fn make_relative(&self, url: &UrlPy) -> Option<String> {
+        self.inner.make_relative(&url.inner)
     }
 
     #[getter]

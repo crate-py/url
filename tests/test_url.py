@@ -88,3 +88,10 @@ def test_parse_with_params():
     assert url == URL.parse(
         "https://example.net/?dont=clobberme&lang=rust&browser=servo",
     )
+
+
+def test_make_relative():
+    base = URL.parse("https://example.net/a/b.html")
+    url = URL.parse("https://example.net/a/c.png")
+    relative = base.make_relative(url)
+    assert relative == "c.png"
