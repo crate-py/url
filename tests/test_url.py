@@ -1,5 +1,5 @@
 """
-Many of the tests follows the examples from the crate README.
+Many of the tests follows the examples from the crate README and docs.
 """
 
 import pytest
@@ -78,3 +78,13 @@ def test_eq():
     """
     assert URL.parse("http://example.com") == URL.parse("http://example.com")
     assert URL.parse("http://foo.com") != URL.parse("http://bar.com")
+
+
+def test_parse_with_params():
+    url = URL.parse_with_params(
+        "https://example.net?dont=clobberme",
+        [("lang", "rust"), ("browser", "servo")],
+    )
+    assert url == URL.parse(
+        "https://example.net/?dont=clobberme&lang=rust&browser=servo",
+    )

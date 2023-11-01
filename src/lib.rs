@@ -21,8 +21,8 @@ struct UrlPy {
     inner: Url,
 }
 
-fn from_result(value: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
-    match value {
+fn from_result(input: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
+    match input {
         Ok(inner) => Ok(UrlPy { inner }),
         Err(e) => Err(match e {
             ParseError::EmptyHost => EmptyHost::new_err(e.to_string()),
@@ -62,8 +62,19 @@ impl UrlPy {
     }
 
     #[classmethod]
-    fn parse(_cls: &PyType, value: &str) -> PyResult<Self> {
-        from_result(Url::parse(value))
+    fn parse(_cls: &PyType, input: &str) -> PyResult<Self> {
+        from_result(Url::parse(input))
+    }
+
+    #[classmethod]
+    fn parse_with_params(_cls: &PyType, input: &str, value: &PyAny) -> PyResult<Self> {
+        // FIXME: Partially reimplemented until we know how to pass PyIterators to Rust Iterators
+        let mut url = from_result(Url::parse(input))?;
+        for each in value.iter()? {
+            let (k, v): (&str, &str) = each?.extract()?;
+            url.inner.query_pairs_mut().append_pair(k, v);
+        }
+        Ok(url)
     }
 
     fn join(&self, input: &str) -> PyResult<Self> {
@@ -139,9 +150,9 @@ struct HostPy {
 #[pymethods]
 impl HostPy {
     #[new]
-    fn new(value: String) -> Self {
+    fn new(input: String) -> Self {
         Self {
-            inner: url::Host::Domain(value),
+            inner: url::Host::Domain(input),
         }
     }
 
