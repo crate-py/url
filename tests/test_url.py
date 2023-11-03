@@ -48,13 +48,19 @@ def test_join():
     assert str(css_url) == "http://servo.github.io/rust-url/main.css"
 
 
-def test_slash():
+@pytest.mark.parametrize(
+    "base_url",
+    ["http://foo.com/bar", "http://foo.com/bar/"],
+)
+def test_slash(base_url):
     """
     Support the / operator as many Python types have decided to.
+
+    Whether the base URL ends in a slash or not, e.g. yarl.URL adds one, so we
+    follow that behavior for this (and not for .join()).
     """
-    this_document = URL.parse("http://servo.github.io/rust-url/url/index.html")
-    css_url = this_document / "../main.css"
-    assert str(css_url) == "http://servo.github.io/rust-url/main.css"
+    joined = URL.parse(base_url) / "baz"
+    assert str(joined) == "http://foo.com/bar/baz"
 
 
 def test_invalid_ipv6_address():
