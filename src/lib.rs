@@ -45,8 +45,8 @@ fn from_result(input: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
 
 #[pymethods]
 impl UrlPy {
-    fn __str__(&self) -> &str {
-        self.inner.as_str()
+    fn __repr__(&self) -> String {
+        format!("<URL {}>", self.inner.as_str())
     }
 
     fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
@@ -55,6 +55,10 @@ impl UrlPy {
             CompareOp::Ne => (self.inner != other.inner).into_py(py),
             _ => py.NotImplemented(),
         }
+    }
+
+    fn __str__(&self) -> &str {
+        self.inner.as_str()
     }
 
     fn __truediv__(&self, other: &str) -> PyResult<Self> {

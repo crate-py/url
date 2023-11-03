@@ -48,21 +48,6 @@ def test_join():
     assert str(css_url) == "http://servo.github.io/rust-url/main.css"
 
 
-@pytest.mark.parametrize(
-    "base_url",
-    ["http://foo.com/bar", "http://foo.com/bar/"],
-)
-def test_slash(base_url):
-    """
-    Support the / operator as many Python types have decided to.
-
-    Whether the base URL ends in a slash or not, e.g. yarl.URL adds one, so we
-    follow that behavior for this (and not for .join()).
-    """
-    joined = URL.parse(base_url) / "baz"
-    assert str(joined) == "http://foo.com/bar/baz"
-
-
 def test_invalid_ipv6_address():
     with pytest.raises(url.InvalidIPv6Address):
         URL.parse("http://[:::1]")
@@ -76,14 +61,6 @@ def test_invalid_relative_url_without_base():
 def test_invalid_junk():
     with pytest.raises(url.URLError):
         URL.parse("https:/12949a;df;;@@@")
-
-
-def test_eq():
-    """
-    Support the / operator as many Python types have decided to.
-    """
-    assert URL.parse("http://example.com") == URL.parse("http://example.com")
-    assert URL.parse("http://foo.com") != URL.parse("http://bar.com")
 
 
 def test_parse_with_params():
@@ -101,3 +78,32 @@ def test_make_relative():
     url = URL.parse("https://example.net/a/c.png")
     relative = base.make_relative(url)
     assert relative == "c.png"
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    ["http://foo.com/bar", "http://foo.com/bar/"],
+)
+def test_slash(base_url):
+    """
+    Support the / operator as many Python types have decided to.
+
+    Whether the base URL ends in a slash or not, e.g. yarl.URL adds one, so we
+    follow that behavior for this (and not for .join()).
+    """
+    joined = URL.parse(base_url) / "baz"
+    assert str(joined) == "http://foo.com/bar/baz"
+
+
+def test_str():
+    example = "http://example.com/"
+    assert str(URL.parse(example)) == example
+
+
+def test_repr():
+    assert repr(URL.parse("http://example.com")) == "<URL http://example.com/>"
+
+
+def test_eq():
+    assert URL.parse("http://example.com") == URL.parse("http://example.com")
+    assert URL.parse("http://foo.com") != URL.parse("http://bar.com")
