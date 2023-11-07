@@ -1,3 +1,8 @@
+use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+};
+
 use pyo3::{
     create_exception, exceptions::PyException, prelude::*, pyclass::CompareOp, types::PyType,
 };
@@ -55,6 +60,12 @@ impl UrlPy {
             CompareOp::Ne => (self.inner != other.inner).into_py(py),
             _ => py.NotImplemented(),
         }
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
     }
 
     fn __str__(&self) -> &str {
@@ -172,6 +183,12 @@ impl HostPy {
         Self {
             inner: url::Host::Domain(input),
         }
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
     }
 
     fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {

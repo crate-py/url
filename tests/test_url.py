@@ -107,3 +107,15 @@ def test_repr():
 def test_eq():
     assert URL.parse("http://example.com") == URL.parse("http://example.com")
     assert URL.parse("http://foo.com") != URL.parse("http://bar.com")
+
+
+def test_hash():
+    one = URL.parse("http://example.com")
+    two = URL.parse("http://example.org")
+    assert {one, two, one} == {one, two}
+
+
+def test_domain_hash():
+    url = URL.parse("http://example.com")
+    domain = url.host
+    assert {domain, domain} == {domain}
