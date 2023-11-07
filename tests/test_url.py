@@ -84,7 +84,7 @@ def test_make_relative():
     "base_url",
     ["http://foo.com/bar", "http://foo.com/bar/"],
 )
-def test_slash(base_url):
+def test_slash(base_url: URL):
     """
     Support the / operator as many Python types have decided to.
 

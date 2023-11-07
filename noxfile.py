@@ -40,6 +40,15 @@ def tests(session):
     session.run("pytest", *session.posargs, TESTS)
 
 
+@session()
+def typing(session):
+    """
+    Check the codebase using pyright by type checking the test suite.
+    """
+    session.install(ROOT, "-r", REQUIREMENTS["tests"])
+    session.run("pyright", TESTS)
+
+
 @session(tags=["build"])
 def build(session):
     """

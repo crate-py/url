@@ -61,6 +61,8 @@ ignore = [
   # Wat, type annotations for self and cls, why is this a thing?
   "ANN101",
   "ANN102",
+  # __init__ does not need a return annotation
+  "ANN204",
   # Private annotations are fine to leave out.
   "ANN202",
   # I don't know how to more properly annotate "pass along all arguments".
@@ -98,5 +100,5 @@ docstring-quotes = "double"
 
 [tool.ruff.per-file-ignores]
 "docs/*" = ["ANN", "D"]
-"tests/*" = ["ANN", "D", "RUF012"]
+"tests/*" = ["ANN201", "D", "RUF012"]
 "noxfile.py" = ["ANN", "D100"]
