@@ -6,12 +6,13 @@ class RelativeURLWithoutBase(Exception): ...
 class InvalidIPv6Address(Exception): ...
 
 class URL:
-    scheme: str
-    username: str
+    cannot_be_a_base: bool
+    host: Domain
     password: str
     path: str
     path_segments: Iterable[str]
-    cannot_be_a_base: bool
+    scheme: str
+    username: str
 
     def __truediv__(self, other: str) -> Self: ...
     @classmethod
