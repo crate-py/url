@@ -45,7 +45,7 @@ def typing(session):
     """
     Check the codebase using pyright by type checking the test suite.
     """
-    session.install(ROOT, "-r", REQUIREMENTS["tests"])
+    session.install("pyright", ROOT, "-r", REQUIREMENTS["tests"])
     session.run("pyright", TESTS)
 
 
