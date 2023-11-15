@@ -283,7 +283,7 @@ dependencies = [
 
 [[package]]
 name = "url-py"
-version = "0.9.2"
+version = "0.9.3"
 dependencies = [
  "pyo3",
  "url",

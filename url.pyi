@@ -8,6 +8,7 @@ class InvalidIPv6Address(Exception): ...
 class URL:
     cannot_be_a_base: bool
     host: Domain
+    host_str: str
     password: str
     path: str
     path_segments: Iterable[str]
