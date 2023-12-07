@@ -1,6 +1,8 @@
 ci:
   skip:
-    - clippy # doesn't seem to run in pre-commit.ci
+    # pre-commit.ci doesn't have Rust installed
+    - fmt
+    - clippy
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
