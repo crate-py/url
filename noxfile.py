@@ -16,17 +16,18 @@ REQUIREMENTS_IN = {
     path.parent.joinpath(f"{path.stem}.in") for path in REQUIREMENTS.values()
 }
 
+SUPPORTED = ["3.8", "3.9", "3.10", "pypy3.10", "3.11", "3.12"]
+LATEST = SUPPORTED[-1]
 
-SUPPORTED = ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.10"]
-
+nox.options.default_venv_backend = "uv|virtualenv"
 nox.options.sessions = []
 
 
-def session(default=True, **kwargs):  # noqa: D103
+def session(default=True, python=LATEST, **kwargs):  # noqa: D103
     def _session(fn):
         if default:
             nox.options.sessions.append(kwargs.get("name", fn.__name__))
-        return nox.session(**kwargs)(fn)
+        return nox.session(python=python, **kwargs)(fn)
 
     return _session
 
@@ -38,15 +39,6 @@ def tests(session):
     """
     session.install(ROOT, "-r", REQUIREMENTS["tests"])
     session.run("pytest", *session.posargs, TESTS)
-
-
-@session()
-def typing(session):
-    """
-    Check the codebase using pyright by type checking the test suite.
-    """
-    session.install("pyright", ROOT, "-r", REQUIREMENTS["tests"])
-    session.run("pyright", TESTS)
 
 
 @session(tags=["build"])
@@ -67,6 +59,15 @@ def style(session):
     """
     session.install("ruff")
     session.run("ruff", "check", TESTS, __file__)
+
+
+@session()
+def typing(session):
+    """
+    Check the codebase using pyright by type checking the test suite.
+    """
+    session.install("pyright", ROOT, "-r", REQUIREMENTS["tests"])
+    session.run("pyright", TESTS)
 
 
 @session(tags=["docs"])
@@ -124,13 +125,13 @@ def requirements(session):
     """
     Update the project's pinned requirements. Commit the result.
     """
-    session.install("pip-tools")
-    for each in REQUIREMENTS_IN:
-        session.run(
-            "pip-compile",
-            "--resolver",
-            "backtracking",
-            "--strip-extras",
-            "-U",
-            each.relative_to(ROOT),
-        )
+    if session.venv_backend == "uv":
+        cmd = ["uv", "pip", "compile"]
+    else:
+        session.install("pip-tools")
+        cmd = ["pip-compile", "--resolver", "backtracking", "--strip-extras"]
+
+    for each, out in REQUIREMENTS_IN:
+        # otherwise output files end up with silly absolute path comments...
+        relative = each.relative_to(ROOT)
+        session.run(*cmd, "--upgrade", "--output-file", out, relative)
