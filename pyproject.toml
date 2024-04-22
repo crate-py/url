@@ -113,6 +113,6 @@ combine-as-imports = true
 from-first = true
 
 [tool.ruff.lint.per-file-ignores]
-"docs/*" = ["ANN", "D"]
-"tests/*" = ["ANN201", "D", "I001", "RUF012", "S"]
 "noxfile.py" = ["ANN", "D100"]
+"docs/*" = ["ANN", "D", "INP001"]
+"tests/*" = ["ANN201", "D", "I001", "RUF012", "S"]
