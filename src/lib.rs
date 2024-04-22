@@ -4,7 +4,8 @@ use std::{
 };
 
 use pyo3::{
-    create_exception, exceptions::PyException, prelude::*, pyclass::CompareOp, types::PyType,
+    create_exception, exceptions::PyException, prelude::*, pybacked::PyBackedStr,
+    pyclass::CompareOp, types::PyType,
 };
 use url::{ParseError, Url};
 
@@ -87,17 +88,23 @@ impl UrlPy {
     }
 
     #[classmethod]
-    fn parse(_cls: &PyType, input: &str) -> PyResult<Self> {
+    fn parse(_cls: &Bound<'_, PyType>, input: &str) -> PyResult<Self> {
         from_result(Url::parse(input))
     }
 
     #[classmethod]
-    fn parse_with_params(_cls: &PyType, input: &str, value: &PyAny) -> PyResult<Self> {
+    fn parse_with_params(
+        _cls: &Bound<'_, PyType>,
+        input: &str,
+        value: &Bound<'_, PyAny>,
+    ) -> PyResult<Self> {
         // FIXME: Partially reimplemented until we know how to pass PyIterators to Rust Iterators
         let mut url = from_result(Url::parse(input))?;
         for each in value.iter()? {
-            let (k, v): (&str, &str) = each?.extract()?;
-            url.inner.query_pairs_mut().append_pair(k, v);
+            let (k, v): (PyBackedStr, PyBackedStr) = each?.extract()?;
+            url.inner
+                .query_pairs_mut()
+                .append_pair(k.as_ref(), v.as_ref());
         }
         Ok(url)
     }
@@ -202,31 +209,37 @@ impl HostPy {
 
 #[pymodule]
 #[pyo3(name = "url")]
-fn url_py(py: Python, m: &PyModule) -> PyResult<()> {
+fn url_py(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<UrlPy>()?;
     m.add_class::<HostPy>()?;
 
-    m.add("URLError", py.get_type::<URLError>())?;
-    m.add("EmptyHost", py.get_type::<EmptyHost>())?;
-    m.add("IdnaError", py.get_type::<IdnaError>())?;
-    m.add("InvalidPort", py.get_type::<InvalidPort>())?;
-    m.add("InvalidIPv4Address", py.get_type::<InvalidIPv4Address>())?;
-    m.add("InvalidIPv6Address", py.get_type::<InvalidIPv6Address>())?;
+    m.add("URLError", py.get_type_bound::<URLError>())?;
+    m.add("EmptyHost", py.get_type_bound::<EmptyHost>())?;
+    m.add("IdnaError", py.get_type_bound::<IdnaError>())?;
+    m.add("InvalidPort", py.get_type_bound::<InvalidPort>())?;
+    m.add(
+        "InvalidIPv4Address",
+        py.get_type_bound::<InvalidIPv4Address>(),
+    )?;
+    m.add(
+        "InvalidIPv6Address",
+        py.get_type_bound::<InvalidIPv6Address>(),
+    )?;
     m.add(
         "InvalidDomainCharacter",
-        py.get_type::<InvalidDomainCharacter>(),
+        py.get_type_bound::<InvalidDomainCharacter>(),
     )?;
     m.add(
         "RelativeURLWithoutBase",
-        py.get_type::<RelativeURLWithoutBase>(),
+        py.get_type_bound::<RelativeURLWithoutBase>(),
     )?;
     m.add(
         "RelativeURLWithCannotBeABaseBase",
-        py.get_type::<RelativeURLWithCannotBeABaseBase>(),
+        py.get_type_bound::<RelativeURLWithCannotBeABaseBase>(),
     )?;
     m.add(
         "SetHostOnCannotBeABaseURL",
-        py.get_type::<SetHostOnCannotBeABaseURL>(),
+        py.get_type_bound::<SetHostOnCannotBeABaseURL>(),
     )?;
 
     Ok(())
