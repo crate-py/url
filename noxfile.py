@@ -12,9 +12,9 @@ REQUIREMENTS = dict(
     docs=DOCS / "requirements.txt",
     tests=ROOT / "test-requirements.txt",
 )
-REQUIREMENTS_IN = {
-    path.parent.joinpath(f"{path.stem}.in") for path in REQUIREMENTS.values()
-}
+REQUIREMENTS_IN = [  # this is actually ordered, as files depend on each other
+    (path.parent / f"{path.stem}.in", path) for path in REQUIREMENTS.values()
+]
 
 SUPPORTED = ["3.8", "3.9", "3.10", "pypy3.10", "3.11", "3.12"]
 LATEST = SUPPORTED[-1]
@@ -123,7 +123,9 @@ def docs_style(session):
 @session(default=False)
 def requirements(session):
     """
-    Update the project's pinned requirements. Commit the result.
+    Update the project's pinned requirements.
+
+    You should commit the result afterwards.
     """
     if session.venv_backend == "uv":
         cmd = ["uv", "pip", "compile"]

@@ -1,4 +1,4 @@
-file:.#egg=url-py
+file:.
 furo
 pygments-github-lexers
 sphinx-copybutton
