@@ -84,9 +84,9 @@ jobs:
           sccache: "true"
           manylinux: auto
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: dist-${{ github.job }}-${{ matrix.target }}
           path: dist
 
   musllinux:
@@ -111,9 +111,9 @@ jobs:
           manylinux: musllinux_1_2
           sccache: "true"
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: dist-${{ github.job }}-${{ matrix.target }}
           path: dist
 
   windows:
@@ -140,9 +140,9 @@ jobs:
           args: --release --out dist --interpreter '3.8 3.9 3.10 3.11 3.12'
           sccache: "true"
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: dist-${{ github.job }}-${{ matrix.target }}
           path: dist
 
   macos:
@@ -163,9 +163,9 @@ jobs:
           args: --release --out dist --interpreter '3.8 3.9 3.10 3.11 3.12 pypy3.8 pypy3.9 pypy3.10'
           sccache: "true"
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: dist-${{ github.job }}-${{ matrix.target }}
           path: dist
 
   sdist:
@@ -179,9 +179,9 @@ jobs:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: dist-${{ github.job }}
           path: dist
 
   release:
@@ -198,7 +198,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: dist-*
+          merge-multiple: true
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
         with:
