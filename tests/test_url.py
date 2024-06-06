@@ -80,6 +80,14 @@ def test_make_relative():
     assert relative == "c.png"
 
 
+def test_with_fragment():
+    url = URL.parse("https://example.com/data.csv")
+    assert url.fragment is None
+
+    evolved = url.with_fragment("foo")
+    assert (evolved.fragment, url.fragment) == ("foo", None)
+
+
 @pytest.mark.parametrize(
     "base_url",
     ["http://foo.com/bar", "http://foo.com/bar/"],

@@ -175,6 +175,12 @@ impl UrlPy {
     fn cannot_be_a_base(&self) -> bool {
         self.inner.cannot_be_a_base()
     }
+
+    fn with_fragment(&self, fragment: Option<&str>) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.set_fragment(fragment);
+        UrlPy { inner: cloned }
+    }
 }
 
 #[repr(transparent)]
