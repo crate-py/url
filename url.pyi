@@ -14,6 +14,7 @@ class URL:
     path_segments: Iterable[str]
     scheme: str
     username: str
+    fragment: str | None
 
     def __truediv__(self, other: str) -> Self: ...
     @classmethod
