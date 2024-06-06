@@ -14,10 +14,6 @@ on:
     - cron: "33 7 * * *"
   workflow_dispatch:
 
-env:
-  PIP_DISABLE_PIP_VERSION_CHECK: "1"
-  PIP_NO_PYTHON_VERSION_WARNING: "1"
-
 jobs:
   list:
     runs-on: ubuntu-latest
