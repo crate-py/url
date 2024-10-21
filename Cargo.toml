@@ -11,5 +11,5 @@ crate-type = ["cdylib"]
 url = "2"
 
 [dependencies.pyo3]
-version = "0.22.4"
+version = "0.22.5"
 features = ["extension-module"]
