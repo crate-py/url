@@ -4,8 +4,7 @@ use std::{
 };
 
 use pyo3::{
-    create_exception, exceptions::PyException, prelude::*, pybacked::PyBackedStr,
-    pyclass::CompareOp, types::PyType,
+    create_exception, exceptions::PyException, prelude::*, pybacked::PyBackedStr, types::PyType,
 };
 use url::{ParseError, Url};
 
@@ -55,12 +54,12 @@ impl UrlPy {
         format!("<URL {}>", self.inner.as_str())
     }
 
-    fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
-        match op {
-            CompareOp::Eq => (self.inner == other.inner).into_py(py),
-            CompareOp::Ne => (self.inner != other.inner).into_py(py),
-            _ => py.NotImplemented(),
-        }
+    fn __eq__(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+
+    fn __ne__(&self, other: &Self) -> bool {
+        self.inner != other.inner
     }
 
     fn __hash__(&self) -> u64 {
@@ -100,7 +99,7 @@ impl UrlPy {
     ) -> PyResult<Self> {
         // FIXME: Partially reimplemented until we know how to pass PyIterators to Rust Iterators
         let mut url = from_result(Url::parse(input))?;
-        for each in value.iter()? {
+        for each in value.try_iter()? {
             let (k, v): (PyBackedStr, PyBackedStr) = each?.extract()?;
             url.inner
                 .query_pairs_mut()
@@ -176,6 +175,7 @@ impl UrlPy {
         self.inner.cannot_be_a_base()
     }
 
+    #[pyo3(signature = (fragment=None))]
     fn with_fragment(&self, fragment: Option<&str>) -> Self {
         let mut cloned = self.inner.clone();
         cloned.set_fragment(fragment);
@@ -204,12 +204,12 @@ impl HostPy {
         hasher.finish()
     }
 
-    fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
-        match op {
-            CompareOp::Eq => (self.inner == other.inner).into_py(py),
-            CompareOp::Ne => (self.inner != other.inner).into_py(py),
-            _ => py.NotImplemented(),
-        }
+    fn __eq__(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
+
+    fn __ne__(&self, other: &Self) -> bool {
+        self.inner != other.inner
     }
 }
 
@@ -219,33 +219,27 @@ fn url_py(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<UrlPy>()?;
     m.add_class::<HostPy>()?;
 
-    m.add("URLError", py.get_type_bound::<URLError>())?;
-    m.add("EmptyHost", py.get_type_bound::<EmptyHost>())?;
-    m.add("IdnaError", py.get_type_bound::<IdnaError>())?;
-    m.add("InvalidPort", py.get_type_bound::<InvalidPort>())?;
-    m.add(
-        "InvalidIPv4Address",
-        py.get_type_bound::<InvalidIPv4Address>(),
-    )?;
-    m.add(
-        "InvalidIPv6Address",
-        py.get_type_bound::<InvalidIPv6Address>(),
-    )?;
+    m.add("URLError", py.get_type::<URLError>())?;
+    m.add("EmptyHost", py.get_type::<EmptyHost>())?;
+    m.add("IdnaError", py.get_type::<IdnaError>())?;
+    m.add("InvalidPort", py.get_type::<InvalidPort>())?;
+    m.add("InvalidIPv4Address", py.get_type::<InvalidIPv4Address>())?;
+    m.add("InvalidIPv6Address", py.get_type::<InvalidIPv6Address>())?;
     m.add(
         "InvalidDomainCharacter",
-        py.get_type_bound::<InvalidDomainCharacter>(),
+        py.get_type::<InvalidDomainCharacter>(),
     )?;
     m.add(
         "RelativeURLWithoutBase",
-        py.get_type_bound::<RelativeURLWithoutBase>(),
+        py.get_type::<RelativeURLWithoutBase>(),
     )?;
     m.add(
         "RelativeURLWithCannotBeABaseBase",
-        py.get_type_bound::<RelativeURLWithCannotBeABaseBase>(),
+        py.get_type::<RelativeURLWithCannotBeABaseBase>(),
     )?;
     m.add(
         "SetHostOnCannotBeABaseURL",
-        py.get_type_bound::<SetHostOnCannotBeABaseURL>(),
+        py.get_type::<SetHostOnCannotBeABaseURL>(),
     )?;
 
     Ok(())
