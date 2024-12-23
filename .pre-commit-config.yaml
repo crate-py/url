@@ -3,6 +3,7 @@ ci:
     # pre-commit.ci doesn't have Rust installed
     - fmt
     - clippy
+    - zizmor
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -42,3 +43,7 @@ repos:
     rev: "v4.0.0-alpha.8"
     hooks:
       - id: prettier
+  - repo: https://github.com/woodruffw/zizmor
+    rev: v0.8.0
+    hooks:
+      - id: zizmor
