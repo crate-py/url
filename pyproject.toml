@@ -7,7 +7,6 @@ name = "url-py"
 description = "Python bindings to Rust's url crate (from Servo)"
 requires-python = ">=3.9"
 readme = "README.rst"
-license = {text = "MIT"}
 keywords = ["data structures", "rust", "persistent"]
 authors = [
   { name = "Julian Berman", email = "Julian+url-py@GrayVines.com" },
@@ -27,6 +26,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Documentation = "https://url-py.readthedocs.io/"
@@ -40,15 +40,6 @@ ignore = [
     "D000",  # see PyCQA/doc8#125
     "D001",  # one sentence per line, so max length doesn't make sense
 ]
-
-[tool.isort]
-combine_as_imports = true
-ensure_newline_before_comments = true
-from_first = true
-include_trailing_comma = true
-multi_line_output = 3
-use_parentheses = true
-known_first_party = ["url"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
@@ -111,8 +102,9 @@ docstring-quotes = "double"
 [tool.ruff.lint.isort]
 combine-as-imports = true
 from-first = true
+known-first-party = ["url"]
 
 [tool.ruff.lint.per-file-ignores]
-"noxfile.py" = ["ANN", "D100"]
+"noxfile.py" = ["ANN", "D100", "S101", "T201"]
 "docs/*" = ["ANN", "D", "INP001"]
-"tests/*" = ["ANN201", "D", "I001", "RUF012", "S"]
+"tests/*" = ["ANN", "B018", "D", "PLR", "RUF012", "S", "SIM", "TRY"]
