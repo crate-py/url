@@ -58,6 +58,8 @@ jobs:
             3.12
             3.13
             3.13t
+            3.14
+            3.14t
             pypy3.9
             pypy3.10
             pypy3.11
@@ -90,6 +92,8 @@ jobs:
             3.12
             3.13
             3.13t
+            3.14
+            3.14t
             pypy3.9
             pypy3.10
             pypy3.11
@@ -98,7 +102,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t pypy3.9 pypy3.10 pypy3.11'
+          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t 3.14 3.14t pypy3.9 pypy3.10 pypy3.11'
           sccache: "true"
           manylinux: auto
       - name: Upload wheels
@@ -129,6 +133,8 @@ jobs:
             3.12
             3.13
             3.13t
+            3.14
+            3.14t
             pypy3.9
             pypy3.10
             pypy3.11
@@ -137,7 +143,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t pypy3.9 pypy3.10 pypy3.11'
+          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t 3.14 3.14t pypy3.9 pypy3.10 pypy3.11'
           manylinux: musllinux_1_2
           sccache: "true"
       - name: Upload wheels
@@ -164,12 +170,14 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
+          allow-prereleases: true
           architecture: ${{ matrix.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13'
+          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.14'
           sccache: "true"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -183,6 +191,7 @@ jobs:
     needs: test
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         target: [x64, x86] # x86 is not supported by pypy
     steps:
@@ -191,14 +200,16 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.13t
+          python-version: |
+            3.13t
+            3.14t
           allow-prereleases: true
           architecture: ${{ matrix.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --interpreter '3.13t'
+          args: --release --out dist --interpreter '3.13t 3.14t'
           sccache: "true"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -225,6 +236,8 @@ jobs:
             3.12
             3.13
             3.13t
+            3.14
+            3.14t
             pypy3.9
             pypy3.10
             pypy3.11
@@ -233,7 +246,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t pypy3.9 pypy3.10 pypy3.11'
+          args: --release --out dist --interpreter '3.9 3.10 3.11 3.12 3.13 3.13t 3.14 3.14t pypy3.9 pypy3.10 pypy3.11'
           sccache: "true"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
