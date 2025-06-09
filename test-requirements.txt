@@ -2,9 +2,9 @@
 #    uv pip compile --output-file /Users/julian/Development/url/test-requirements.txt test-requirements.in
 iniconfig==2.1.0
     # via pytest
-packaging==24.2
+packaging==25.0
     # via pytest
-pluggy==1.5.0
+pluggy==1.6.0
     # via pytest
 pytest==8.3.5
     # via -r test-requirements.in
