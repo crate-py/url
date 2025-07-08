@@ -76,10 +76,10 @@ impl UrlPy {
         // .join()'s behavior depends on whether the URL has a trailing slash or not --
         // which is good! But here for division we follow the convention of e.g. yarl that someone
         // using / always wants to simply add one, so the behavior here deviates from a simple join
-        if let Some(segments) = self.inner.path_segments() {
-            if let Some(last) = segments.last() {
+        if let Some(mut segments) = self.inner.path_segments() {
+            if let Some(last) = segments.next_back() {
                 if !last.is_empty() {
-                    return self.join(format!("{}/{}", last, other).as_str());
+                    return self.join(format!("{last}/{other}").as_str());
                 }
             }
         }
