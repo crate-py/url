@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@4959332f0f014c5280e7eac8b70c90cb574c9f9b
+      - uses: astral-sh/setup-uv@557e51de59eb14aaaba2ed9621916900a91d50c6
         with:
           enable-cache: ${{ github.ref_type != 'tag' }} # zizmor: ignore[cache-poisoning]
       - id: noxenvs-matrix
@@ -68,7 +68,7 @@ jobs:
             pypy3.11
           allow-prereleases: true
 
-      - uses: astral-sh/setup-uv@4959332f0f014c5280e7eac8b70c90cb574c9f9b
+      - uses: astral-sh/setup-uv@557e51de59eb14aaaba2ed9621916900a91d50c6
         with:
           enable-cache: ${{ github.ref_type != 'tag' }} # zizmor: ignore[cache-poisoning]
       - name: Run nox
@@ -81,7 +81,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [x86_64, x86, aarch64, armv7, s390x, ppc64le]
+        target:
+          [
+            x86_64,
+            x86,
+            aarch64,
+            armv7,
+            s390x,
+            ppc64le,
+            riscv64gc-unknown-linux-gnu,
+          ]
 
     steps:
       - uses: actions/checkout@v5
@@ -368,15 +377,17 @@ jobs:
         with:
           pattern: dist-*
           merge-multiple: true
+          path: dist/
       - name: Publish to PyPI
-        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
         with:
-          command: upload
-          args: --non-interactive --skip-existing *
+          skip-existing: true
+          print-hash: true
+          packages-dir: dist
       - name: Create a GitHub Release
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8
         with:
           files: |
-            *
+            dist/*
           generate_release_notes: true
