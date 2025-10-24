@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "url-py"
 description = "Python bindings to Rust's url crate (from Servo)"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.rst"
 keywords = ["data structures", "rust", "persistent"]
 authors = [
@@ -17,13 +17,11 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Rust",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: 3",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -91,7 +89,6 @@ ignore = [
   "SIM300", # Not sure what heuristic this uses, but it's easily incorrect
   "SLF001",  # Private usage within this package itself is fine
   "TD",  # These TODO style rules are also silly
-  "UP007",  # We support 3.9
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
