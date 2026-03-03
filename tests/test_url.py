@@ -127,3 +127,43 @@ def test_domain_hash():
     url = URL.parse("http://example.com")
     domain = url.host
     assert {domain, domain} == {domain}
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        pytest.param(
+            "https://example.com?a=1&b=2&c",
+            [("a", "1"), ("b", "2"), ("c", "")],
+            id="trailing key without value",
+        ),
+        pytest.param(
+            "https://example.com?a=1&b=2",
+            [("a", "1"), ("b", "2")],
+            id="basic query pairs",
+        ),
+        pytest.param(
+            "https://example.com?name=John%20Doe",
+            [("name", "John Doe")],
+            id="URL-encoded query pairs",
+        ),
+        pytest.param(
+            "https://example.com",
+            [],
+            id="no query",
+        ),
+        pytest.param(
+            "https://example.com?",
+            [],
+            id="empty query",
+        ),
+        pytest.param(
+            "https://example.com?a=1&a=2",
+            [("a", "1"), ("a", "2")],
+            id="duplicate keys",
+        ),
+    ],
+)
+def test_query_pairs(input: str, expected: list[tuple[str, str]]):
+    url = URL.parse(input)
+    assert url.query_pairs == expected
