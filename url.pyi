@@ -15,6 +15,8 @@ class URL:
     scheme: str
     username: str
     fragment: str | None
+    query: str | None
+    query_pairs: list[tuple[str, str]]
 
     def __truediv__(self, other: str) -> Self: ...
     @classmethod

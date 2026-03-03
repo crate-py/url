@@ -166,6 +166,13 @@ impl UrlPy {
     }
 
     #[getter]
+    fn query_pairs(&self) -> Vec<(String, String)> {
+        self.inner.query_pairs()
+            .map(|(k, v)| (k.into_owned(), v.into_owned()))
+            .collect()
+    }
+
+    #[getter]
     fn fragment(&self) -> Option<&str> {
         self.inner.fragment()
     }
