@@ -1,4 +1,4 @@
-name: GitHub Actions Security Analysis with zizmor 🌈
+ame: GitHub Actions Security Analysis with zizmor 🌈
 
 on:
   push:
@@ -10,25 +10,19 @@ permissions: {}
 
 jobs:
   zizmor:
+    name: Run zizmor 🌈
     runs-on: ubuntu-latest
 
     permissions:
-      security-events: write
+      security-events: write # Required for upload-sarif (used by zizmor-action) to upload SARIF files.
+      contents: read         # Only needed for private repos. Needed to clone the repo.
+      actions: read          # Only needed for private repos. Needed for upload-sarif to read workflow run info.
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
-      - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
       - name: Run zizmor 🌈
-        run: uvx zizmor --format=sarif . > results.sarif
-
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4
-        with:
-          sarif_file: results.sarif
-          category: zizmor
+        uses: zizmorcore/zizmor-action@0dce2577a4760a2749d8cfb7a84b7d5585ebcb7d # v0.5.0
