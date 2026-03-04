@@ -188,6 +188,71 @@ impl UrlPy {
         cloned.set_fragment(fragment);
         UrlPy { inner: cloned }
     }
+
+    #[pyo3(signature = (query=None))]
+    fn with_query(&self, query: Option<&str>) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.set_query(query);
+        UrlPy { inner: cloned }
+    }
+
+    fn without_query(&self) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.query_pairs_mut().clear();
+        UrlPy { inner: cloned }
+    }
+
+    fn with_pair(&self, key: &str, value: &str) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.query_pairs_mut().append_pair(key, value);
+        UrlPy { inner: cloned }
+    }
+
+    fn with_key_only(&self, key: &str) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.query_pairs_mut().append_key_only(key);
+        UrlPy { inner: cloned }
+    }
+
+    fn with_pairs(&self, value: &Bound<'_, PyAny>) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        {
+            let mut pairs = cloned.query_pairs_mut();
+            for each in value.try_iter()? {
+                let (k, v): (PyBackedStr, PyBackedStr) = each?.extract()?;
+                pairs.append_pair(k.as_ref(), v.as_ref());
+            }
+        }
+        Ok(UrlPy { inner: cloned })
+    }
+
+    fn with_keys_only(&self, value: &Bound<'_, PyAny>) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        {
+            let mut pairs = cloned.query_pairs_mut();
+            for each in value.try_iter()? {
+                let k: PyBackedStr = each?.extract()?;
+                pairs.append_key_only(k.as_ref());
+            }
+        }
+        Ok(UrlPy { inner: cloned })
+    }
+
+    fn without_pair(&self, key: &str) -> Self {
+        let mut cloned = self.inner.clone();
+        let remaining: Vec<(String, String)> = cloned
+            .query_pairs()
+            .filter(|(k, _)| k != key)
+            .map(|(k, v)| (k.into_owned(), v.into_owned()))
+            .collect();
+
+        if remaining.is_empty() {
+            cloned.set_query(None);
+        } else {
+            cloned.query_pairs_mut().clear().extend_pairs(remaining);
+        }
+        UrlPy { inner: cloned }
+    }
 }
 
 #[repr(transparent)]

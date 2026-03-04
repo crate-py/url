@@ -167,3 +167,162 @@ def test_domain_hash():
 def test_query_pairs(input: str, expected: list[tuple[str, str]]):
     url = URL.parse(input)
     assert url.query_pairs == expected
+
+
+def test_with_fragment_full():
+    url = URL.parse("https://example.com/path")
+    assert url.fragment is None
+
+    updated = url.with_fragment("section")
+    assert updated.fragment == "section"
+    assert str(updated) == "https://example.com/path#section"
+    assert url.fragment is None
+
+    cleared = updated.with_fragment(None)
+    assert cleared.fragment is None
+    assert str(cleared) == "https://example.com/path"
+
+    empty = url.with_fragment("")
+    assert empty.fragment == ""
+    assert str(empty) == "https://example.com/path#"
+
+
+def test_with_query():
+    url = URL.parse("https://example.com/path")
+    assert url.query is None
+
+    updated = url.with_query("key=value")
+    assert updated.query == "key=value"
+    assert str(updated) == "https://example.com/path?key=value"
+    assert url.query is None
+
+    replaced = updated.with_query("new=param")
+    assert replaced.query == "new=param"
+    assert str(replaced) == "https://example.com/path?new=param"
+
+    cleared = updated.with_query(None)
+    assert cleared.query is None
+    assert str(cleared) == "https://example.com/path"
+
+    empty = url.with_query("")
+    assert empty.query == ""
+    assert str(empty) == "https://example.com/path?"
+
+
+def test_without_query():
+    url = URL.parse("https://example.com/path?key=value&other=param")
+    assert url.query == "key=value&other=param"
+
+    cleared = url.without_query()
+    assert cleared.query == ""
+    assert str(cleared) == "https://example.com/path?"
+    assert url.query == "key=value&other=param"
+
+    already_clear = URL.parse("https://example.com/path")
+    still_clear = already_clear.without_query()
+    assert still_clear.query == ""
+    assert str(still_clear) == "https://example.com/path?"
+
+
+def test_with_pair():
+    url = URL.parse("https://example.com/path")
+
+    with_one = url.with_pair("key", "value")
+    assert with_one.query == "key=value"
+    assert with_one.query_pairs == [("key", "value")]
+
+    with_two = with_one.with_pair("foo", "bar")
+    assert with_two.query == "key=value&foo=bar"
+    assert with_two.query_pairs == [("key", "value"), ("foo", "bar")]
+
+    with_duplicate = with_two.with_pair("key", "another")
+    assert with_duplicate.query_pairs == [
+        ("key", "value"),
+        ("foo", "bar"),
+        ("key", "another"),
+    ]
+
+    with_special = url.with_pair("name", "John Doe")
+    assert with_special.query is not None
+    assert (
+        "name=John+Doe" in with_special.query
+        or "name=John%20Doe" in with_special.query
+    )
+    assert with_special.query_pairs == [("name", "John Doe")]
+
+
+def test_with_key_only():
+    url = URL.parse("https://example.com/path")
+
+    with_key = url.with_key_only("flag")
+    assert with_key.query == "flag"
+    assert with_key.query_pairs == [("flag", "")]
+
+    with_multiple = with_key.with_key_only("another")
+    assert with_multiple.query_pairs == [("flag", ""), ("another", "")]
+
+    mixed = url.with_pair("key", "value").with_key_only("flag")
+    assert mixed.query_pairs == [("key", "value"), ("flag", "")]
+
+
+def test_with_pairs():
+    url = URL.parse("https://example.com/path")
+
+    extended = url.with_pairs([("a", "1"), ("b", "2"), ("c", "3")])
+    assert extended.query_pairs == [("a", "1"), ("b", "2"), ("c", "3")]
+    assert extended.query == "a=1&b=2&c=3"
+
+    existing = URL.parse("https://example.com/path?existing=value")
+    more = existing.with_pairs([("new", "param")])
+    assert more.query_pairs == [("existing", "value"), ("new", "param")]
+
+    empty = url.with_pairs([])
+    assert empty.query == ""
+    assert empty.query_pairs == []
+
+    with_duplicates = url.with_pairs([("key", "val1"), ("key", "val2")])
+    assert with_duplicates.query_pairs == [("key", "val1"), ("key", "val2")]
+
+
+def test_with_keys_only():
+    url = URL.parse("https://example.com/path")
+
+    extended = url.with_keys_only(["flag1", "flag2", "flag3"])
+    assert extended.query_pairs == [
+        ("flag1", ""),
+        ("flag2", ""),
+        ("flag3", ""),
+    ]
+
+    existing = URL.parse("https://example.com/path?key=value")
+    more = existing.with_keys_only(["flag"])
+    assert more.query_pairs == [("key", "value"), ("flag", "")]
+
+    empty = url.with_keys_only([])
+    assert empty.query == ""
+    assert empty.query_pairs == []
+
+
+def test_without_pair():
+    url = URL.parse("https://example.com/path?a=1&b=2&c=3&a=4")
+
+    removed_a = url.without_pair("a")
+    assert removed_a.query_pairs == [("b", "2"), ("c", "3")]
+    assert removed_a.query == "b=2&c=3"
+
+    removed_b = removed_a.without_pair("b")
+    assert removed_b.query_pairs == [("c", "3")]
+    assert removed_b.query == "c=3"
+
+    removed_all = removed_b.without_pair("c")
+    assert removed_all.query is None
+    assert removed_all.query_pairs == []
+
+    nonexistent = url.without_pair("nothere")
+    assert nonexistent.query_pairs == url.query_pairs
+
+    url_with_encoded = URL.parse(
+        "https://example.com/path?name=John+Doe&other=value",
+    )
+    removed_name = url_with_encoded.without_pair("name")
+    assert removed_name.query_pairs == [("other", "value")]
