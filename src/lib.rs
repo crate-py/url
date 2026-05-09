@@ -27,26 +27,25 @@ struct UrlPy {
     inner: Url,
 }
 
-fn from_result(input: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
-    match input {
-        Ok(inner) => Ok(UrlPy { inner }),
-        Err(e) => Err(match e {
-            ParseError::EmptyHost => EmptyHost::new_err(e.to_string()),
-            ParseError::IdnaError => IdnaError::new_err(e.to_string()),
-            ParseError::InvalidPort => InvalidPort::new_err(e.to_string()),
-            ParseError::InvalidIpv4Address => InvalidIPv4Address::new_err(e.to_string()),
-            ParseError::InvalidIpv6Address => InvalidIPv6Address::new_err(e.to_string()),
-            ParseError::InvalidDomainCharacter => InvalidDomainCharacter::new_err(e.to_string()),
-            ParseError::RelativeUrlWithoutBase => RelativeURLWithoutBase::new_err(e.to_string()),
-            ParseError::RelativeUrlWithCannotBeABaseBase => {
-                RelativeURLWithCannotBeABaseBase::new_err(e.to_string())
-            }
-            ParseError::SetHostOnCannotBeABaseUrl => {
-                SetHostOnCannotBeABaseURL::new_err(e.to_string())
-            }
-            _ => URLError::new_err(e.to_string()),
-        }),
+fn parse_err_to_py(e: ParseError) -> PyErr {
+    match e {
+        ParseError::EmptyHost => EmptyHost::new_err(e.to_string()),
+        ParseError::IdnaError => IdnaError::new_err(e.to_string()),
+        ParseError::InvalidPort => InvalidPort::new_err(e.to_string()),
+        ParseError::InvalidIpv4Address => InvalidIPv4Address::new_err(e.to_string()),
+        ParseError::InvalidIpv6Address => InvalidIPv6Address::new_err(e.to_string()),
+        ParseError::InvalidDomainCharacter => InvalidDomainCharacter::new_err(e.to_string()),
+        ParseError::RelativeUrlWithoutBase => RelativeURLWithoutBase::new_err(e.to_string()),
+        ParseError::RelativeUrlWithCannotBeABaseBase => {
+            RelativeURLWithCannotBeABaseBase::new_err(e.to_string())
+        }
+        ParseError::SetHostOnCannotBeABaseUrl => SetHostOnCannotBeABaseURL::new_err(e.to_string()),
+        _ => URLError::new_err(e.to_string()),
     }
+}
+
+fn from_result(input: Result<url::Url, ParseError>) -> PyResult<UrlPy> {
+    input.map(|inner| UrlPy { inner }).map_err(parse_err_to_py)
 }
 
 #[pymethods]
@@ -226,6 +225,56 @@ impl UrlPy {
         let mut cloned = self.inner.clone();
         cloned.query_pairs_mut().clear();
         UrlPy { inner: cloned }
+    }
+
+    fn with_scheme(&self, scheme: &str) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        cloned.set_scheme(scheme).map_err(|()| {
+            URLError::new_err(format!(
+                "cannot set scheme to {scheme:?} on {}",
+                self.inner.as_str()
+            ))
+        })?;
+        Ok(UrlPy { inner: cloned })
+    }
+
+    #[pyo3(signature = (host=None))]
+    fn with_host(&self, host: Option<&str>) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        cloned.set_host(host).map_err(parse_err_to_py)?;
+        Ok(UrlPy { inner: cloned })
+    }
+
+    fn with_path(&self, path: &str) -> Self {
+        let mut cloned = self.inner.clone();
+        cloned.set_path(path);
+        UrlPy { inner: cloned }
+    }
+
+    #[pyo3(signature = (port=None))]
+    fn with_port(&self, port: Option<u16>) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        cloned.set_port(port).map_err(|()| {
+            URLError::new_err(format!("cannot set port on {}", self.inner.as_str()))
+        })?;
+        Ok(UrlPy { inner: cloned })
+    }
+
+    fn with_username(&self, username: &str) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        cloned.set_username(username).map_err(|()| {
+            URLError::new_err(format!("cannot set username on {}", self.inner.as_str()))
+        })?;
+        Ok(UrlPy { inner: cloned })
+    }
+
+    #[pyo3(signature = (password=None))]
+    fn with_password(&self, password: Option<&str>) -> PyResult<Self> {
+        let mut cloned = self.inner.clone();
+        cloned.set_password(password).map_err(|()| {
+            URLError::new_err(format!("cannot set password on {}", self.inner.as_str()))
+        })?;
+        Ok(UrlPy { inner: cloned })
     }
 
     fn with_pair(&self, key: &str, value: &str) -> Self {

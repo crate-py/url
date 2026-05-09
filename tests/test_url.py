@@ -253,6 +253,79 @@ def test_without_query():
     assert str(still_clear) == "https://example.com/path?"
 
 
+def test_with_scheme():
+    u = URL.parse("https://example.com/path")
+    assert str(u.with_scheme("http")) == "http://example.com/path"
+    assert u.scheme == "https"
+
+
+def test_with_scheme_invalid():
+    u = URL.parse("https://example.com/")
+    with pytest.raises(url.URLError):
+        u.with_scheme("not a scheme")
+
+
+def test_with_host():
+    u = URL.parse("https://example.com/path")
+    assert u.with_host("other.com").host_str == "other.com"
+    assert u.host_str == "example.com"
+
+
+def test_with_host_clear():
+    u = URL.parse("file://localhost/path")
+    cleared = u.with_host(None)
+    assert cleared.host_str is None or cleared.host_str == ""
+
+
+def test_with_host_invalid():
+    u = URL.parse("https://example.com/")
+    with pytest.raises(url.URLError):
+        u.with_host("not a host")
+
+
+def test_with_path():
+    u = URL.parse("https://example.com/old?q=1")
+    assert u.with_path("/new").path == "/new"
+    assert str(u.with_path("/new")) == "https://example.com/new?q=1"
+    assert u.path == "/old"
+
+
+def test_with_port():
+    u = URL.parse("https://example.com:8080/")
+    assert u.with_port(9000).port == 9000
+    assert u.with_port(None).port is None
+    assert u.port == 8080
+
+
+def test_with_port_on_cannot_be_a_base():
+    u = URL.parse("data:text/plain,hi")
+    with pytest.raises(url.URLError):
+        u.with_port(80)
+
+
+def test_with_username():
+    u = URL.parse("https://alice@example.com/")
+    assert u.with_username("bob").username == "bob"
+    assert u.username == "alice"
+
+
+def test_with_username_on_cannot_be_a_base():
+    u = URL.parse("data:text/plain,hi")
+    with pytest.raises(url.URLError):
+        u.with_username("alice")
+
+
+def test_with_password():
+    u = URL.parse("https://alice:secret@example.com/")
+    assert u.with_password("hunter2").password == "hunter2"
+    assert u.password == "secret"
+
+
+def test_with_password_clear():
+    u = URL.parse("https://alice:secret@example.com/")
+    assert u.with_password(None).password is None
+
+
 def test_with_pair():
     url = URL.parse("https://example.com/path")
 
