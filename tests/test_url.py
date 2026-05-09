@@ -23,7 +23,7 @@ def test_https_url():
 
     assert issue_url.port is None
     assert issue_url.path == "/rust-lang/rust/issues"
-    assert list(issue_url.path_segments) == ["rust-lang", "rust", "issues"]
+    assert issue_url.path_segments == ["rust-lang", "rust", "issues"]
     assert issue_url.query == "labels=E-easy&state=open"
 
     # TODO: Decide what API makes sense here in Python --
