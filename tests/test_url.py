@@ -253,6 +253,44 @@ def test_without_query():
     assert str(still_clear) == "https://example.com/path?"
 
 
+def test_path_decoded():
+    u = URL.parse("file:///my%20note.md")
+    assert u.path == "/my%20note.md"
+    assert u.path_decoded == "/my note.md"
+
+
+def test_path_decoded_unicode():
+    u = URL.parse("https://example.com/%E2%98%83/snowman")
+    assert u.path_decoded == "/☃/snowman"
+
+
+def test_path_decoded_no_escapes():
+    u = URL.parse("https://example.com/plain/path")
+    assert u.path_decoded == "/plain/path"
+
+
+def test_path_decoded_invalid_utf8_is_lossy():
+    u = URL.parse("file:///%FF%FE.md")
+    assert "�" in u.path_decoded
+
+
+def test_path_segments_decoded():
+    u = URL.parse("file:///my%20note.md")
+    assert u.path_segments == ["my%20note.md"]
+    assert u.path_segments_decoded == ["my note.md"]
+
+
+def test_path_segments_decoded_multiple():
+    u = URL.parse("https://example.com/a%20b/c%2Fd")
+    assert u.path_segments_decoded == ["a b", "c/d"]
+
+
+def test_path_segments_decoded_none_for_cannot_be_a_base():
+    u = URL.parse("data:text/plain,hi")
+    assert u.path_segments is None
+    assert u.path_segments_decoded is None
+
+
 def test_with_scheme():
     u = URL.parse("https://example.com/path")
     assert str(u.with_scheme("http")) == "http://example.com/path"

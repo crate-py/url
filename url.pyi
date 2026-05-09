@@ -20,7 +20,9 @@ class URL:
     host_str: str | None
     password: str | None
     path: str
+    path_decoded: str
     path_segments: list[str] | None
+    path_segments_decoded: list[str] | None
     port: int | None
     scheme: str
     username: str

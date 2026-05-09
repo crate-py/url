@@ -367,6 +367,7 @@ dependencies = [
 name = "url-py"
 version = "0.20.0"
 dependencies = [
+ "percent-encoding",
  "pyo3",
  "url",
 ]

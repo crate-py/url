@@ -8,6 +8,7 @@ name = "url"
 crate-type = ["cdylib"]
 
 [dependencies]
+percent-encoding = "2"
 url = "2"
 
 [dependencies.pyo3]

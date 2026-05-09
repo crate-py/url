@@ -4,6 +4,7 @@ use std::{
     path::PathBuf,
 };
 
+use percent_encoding::percent_decode_str;
 use pyo3::{
     create_exception, exceptions::PyException, prelude::*, pybacked::PyBackedStr, types::PyType,
 };
@@ -182,6 +183,23 @@ impl UrlPy {
     fn path_segments(&self) -> Option<Vec<&str>> {
         // FIXME: Figure out how to preserve this being an iterator.
         Some(self.inner.path_segments()?.collect())
+    }
+
+    #[getter]
+    fn path_decoded(&self) -> String {
+        percent_decode_str(self.inner.path())
+            .decode_utf8_lossy()
+            .into_owned()
+    }
+
+    #[getter]
+    fn path_segments_decoded(&self) -> Option<Vec<String>> {
+        Some(
+            self.inner
+                .path_segments()?
+                .map(|s| percent_decode_str(s).decode_utf8_lossy().into_owned())
+                .collect(),
+        )
     }
 
     #[getter]
