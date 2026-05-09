@@ -2,6 +2,7 @@
 name = "url-py"
 version = "0.20.0"
 edition = "2021"
+publish = false
 
 [lib]
 name = "url"
