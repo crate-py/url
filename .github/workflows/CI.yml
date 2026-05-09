@@ -14,8 +14,13 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   list:
+    name: List nox sessions
     runs-on: ubuntu-latest
     outputs:
       noxenvs: ${{ steps.noxenvs-matrix.outputs.noxenvs }}
@@ -33,6 +38,7 @@ jobs:
           )
 
   test:
+    name: Run ${{ matrix.noxenv }}
     needs: list
     runs-on: ubuntu-latest
 
@@ -72,6 +78,7 @@ jobs:
         run: uvx nox -s "${{ matrix.noxenv }}" -- ${{ matrix.posargs }} # zizmor: ignore[template-injection]
 
   manylinux:
+    name: Build manylinux wheels (${{ matrix.target }})
     needs: test
     runs-on: ubuntu-latest
 
@@ -120,6 +127,7 @@ jobs:
           path: dist
 
   musllinux:
+    name: Build musllinux wheels (${{ matrix.target }})
     needs: test
     runs-on: ubuntu-latest
 
@@ -162,6 +170,7 @@ jobs:
           path: dist
 
   windows:
+    name: Build Windows wheels (${{ matrix.target }})
     needs: test
     runs-on: windows-latest
 
@@ -199,6 +208,7 @@ jobs:
           path: dist
 
   windows-arm:
+    name: Build Windows ARM wheels (${{ matrix.target }})
     needs: test
     runs-on: windows-11-arm
 
@@ -263,6 +273,7 @@ jobs:
   # free-threaded and normal builds share a site-packages folder on Windows so
   # we must build free-threaded separately
   windows-free-threaded:
+    name: Build Windows free-threaded wheels (${{ matrix.target }})
     needs: test
     runs-on: windows-latest
 
@@ -296,6 +307,7 @@ jobs:
           path: dist
 
   macos:
+    name: Build macOS wheels (${{ matrix.target }})
     needs: test
     runs-on: macos-latest
 
@@ -334,6 +346,7 @@ jobs:
           path: dist
 
   sdist:
+    name: Build sdist
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -356,6 +369,7 @@ jobs:
           path: dist
 
   release:
+    name: Release to PyPI
     needs:
       [manylinux, musllinux, windows, windows-arm, windows-free-threaded, macos]
     runs-on: ubuntu-latest
@@ -364,8 +378,8 @@ jobs:
       name: PyPI
       url: https://pypi.org/p/url-py
     permissions:
-      contents: write
-      id-token: write
+      contents: write  # required to create the GitHub Release for the tag
+      id-token: write  # required for PyPI Trusted Publishing (OIDC)
 
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -381,8 +395,7 @@ jobs:
           packages-dir: dist
       - name: Create a GitHub Release
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
-        with:
-          files: |
-            dist/*
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --generate-notes dist/*
