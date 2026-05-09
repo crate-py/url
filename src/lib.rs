@@ -1,6 +1,7 @@
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
+    path::PathBuf,
 };
 
 use pyo3::{
@@ -92,6 +93,26 @@ impl UrlPy {
     }
 
     #[classmethod]
+    fn from_file_path(_cls: &Bound<'_, PyType>, path: PathBuf) -> PyResult<Self> {
+        Url::from_file_path(&path)
+            .map(|inner| UrlPy { inner })
+            .map_err(|()| URLError::new_err(format!("not an absolute path: {}", path.display())))
+    }
+
+    #[classmethod]
+    fn from_directory_path(_cls: &Bound<'_, PyType>, path: PathBuf) -> PyResult<Self> {
+        Url::from_directory_path(&path)
+            .map(|inner| UrlPy { inner })
+            .map_err(|()| URLError::new_err(format!("not an absolute path: {}", path.display())))
+    }
+
+    fn to_file_path(&self) -> PyResult<PathBuf> {
+        self.inner
+            .to_file_path()
+            .map_err(|()| URLError::new_err(format!("not a file URL: {}", self.inner.as_str())))
+    }
+
+    #[classmethod]
     fn parse_with_params(
         _cls: &Bound<'_, PyType>,
         input: &str,
@@ -167,7 +188,8 @@ impl UrlPy {
 
     #[getter]
     fn query_pairs(&self) -> Vec<(String, String)> {
-        self.inner.query_pairs()
+        self.inner
+            .query_pairs()
             .map(|(k, v)| (k.into_owned(), v.into_owned()))
             .collect()
     }

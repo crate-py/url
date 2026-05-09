@@ -2,6 +2,8 @@
 Many of the tests follows the examples from the crate README and docs.
 """
 
+from pathlib import Path
+
 import pytest
 
 from url import URL
@@ -301,6 +303,60 @@ def test_with_keys_only():
     empty = url.with_keys_only([])
     assert empty.query == ""
     assert empty.query_pairs == []
+
+
+def test_from_file_path_str():
+    u = URL.from_file_path("/etc/hosts")
+    assert u.scheme == "file"
+    assert u.path == "/etc/hosts"
+    assert str(u) == "file:///etc/hosts"
+
+
+def test_from_file_path_pathlib():
+    u = URL.from_file_path(Path("/etc/hosts"))
+    assert u == URL.from_file_path("/etc/hosts")
+
+
+def test_from_file_path_encodes_specials():
+    u = URL.from_file_path("/tmp/my note.md")
+    assert u.path == "/tmp/my%20note.md"
+
+
+def test_from_file_path_relative_raises():
+    with pytest.raises(url.URLError):
+        URL.from_file_path("etc/hosts")
+
+
+def test_from_directory_path_adds_trailing_slash():
+    d = URL.from_directory_path("/tmp/foo")
+    assert d.path == "/tmp/foo/"
+    assert str(d).endswith("/")
+
+
+def test_from_directory_path_join_works_as_base():
+    d = URL.from_directory_path("/vault/folder")
+    joined = d.join("note.md")
+    assert joined.path == "/vault/folder/note.md"
+
+
+def test_from_directory_path_relative_raises():
+    with pytest.raises(url.URLError):
+        URL.from_directory_path("vault/folder")
+
+
+def test_to_file_path_roundtrip():
+    original = Path("/etc/hosts")
+    assert URL.from_file_path(original).to_file_path() == original
+
+
+def test_to_file_path_decodes_percent_escapes():
+    u = URL.from_file_path("/tmp/my note.md")
+    assert u.to_file_path() == Path("/tmp/my note.md")
+
+
+def test_to_file_path_non_file_url_raises():
+    with pytest.raises(url.URLError):
+        URL.parse("https://example.com/").to_file_path()
 
 
 def test_without_pair():

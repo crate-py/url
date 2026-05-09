@@ -34,6 +34,10 @@ Issues = "https://github.com/crate-py/url/issues/"
 Funding = "https://github.com/sponsors/Julian"
 Source = "https://github.com/crate-py/url"
 
+[dependency-groups]
+tests = ["pytest"]
+dev = [{include-group = "tests"}, "maturin"]
+
 [tool.doc8]
 ignore = [
     "D000",  # see PyCQA/doc8#125
