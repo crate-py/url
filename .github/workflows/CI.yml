@@ -398,4 +398,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" --generate-notes dist/*
+        run: gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --generate-notes dist/*
