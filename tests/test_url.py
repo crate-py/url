@@ -60,6 +60,33 @@ def test_invalid_relative_url_without_base():
         URL.parse("../main.css")
 
 
+def test_parse_with_base():
+    base = URL.parse("file:///vault/folder/")
+    u = URL.parse("note.md", base=base)
+    assert str(u) == "file:///vault/folder/note.md"
+
+
+def test_parse_with_base_matches_join():
+    base = URL.parse("https://example.com/a/")
+    assert URL.parse("b", base=base) == base.join("b")
+
+
+def test_parse_absolute_input_ignores_base():
+    base = URL.parse("https://example.com/")
+    u = URL.parse("https://other.com/x", base=base)
+    assert str(u) == "https://other.com/x"
+
+
+def test_parse_relative_with_none_base_raises():
+    with pytest.raises(url.RelativeURLWithoutBase):
+        URL.parse("note.md", base=None)
+
+
+def test_parse_with_invalid_base_type():
+    with pytest.raises(TypeError):
+        URL.parse("note.md", base="file:///x/")  # type: ignore[arg-type]
+
+
 def test_invalid_junk():
     with pytest.raises(url.URLError):
         URL.parse("https:/12949a;df;;@@@")

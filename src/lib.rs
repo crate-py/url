@@ -88,8 +88,12 @@ impl UrlPy {
     }
 
     #[classmethod]
-    fn parse(_cls: &Bound<'_, PyType>, input: &str) -> PyResult<Self> {
-        from_result(Url::parse(input))
+    #[pyo3(signature = (input, base=None))]
+    fn parse(_cls: &Bound<'_, PyType>, input: &str, base: Option<&UrlPy>) -> PyResult<Self> {
+        match base {
+            None => from_result(Url::parse(input)),
+            Some(b) => from_result(b.inner.join(input)),
+        }
     }
 
     #[classmethod]
