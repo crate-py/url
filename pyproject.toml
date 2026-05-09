@@ -36,6 +36,18 @@ Source = "https://github.com/crate-py/url"
 
 [dependency-groups]
 tests = ["pytest"]
+typing = [{include-group = "tests"}, "pyright"]
+style = ["ruff"]
+docs = [
+  "furo",
+  "pygments-github-lexers",
+  "sphinx>5",
+  "sphinxcontrib-spelling>5",
+  "sphinxext-opengraph",
+  "sphinx-copybutton",
+]
+docs-style = ["doc8", "pygments", "pygments-github-lexers"]
+packaging = ["build", "twine"]
 dev = [{include-group = "tests"}, "maturin"]
 
 [tool.doc8]

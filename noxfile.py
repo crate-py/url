@@ -8,18 +8,10 @@ PYPROJECT = ROOT / "pyproject.toml"
 DOCS = ROOT / "docs"
 TESTS = ROOT / "tests"
 
-REQUIREMENTS = dict(
-    docs=DOCS / "requirements.txt",
-    tests=ROOT / "test-requirements.txt",
-)
-REQUIREMENTS_IN = [  # this is actually ordered, as files depend on each other
-    (path.parent / f"{path.stem}.in", path) for path in REQUIREMENTS.values()
-]
-
 SUPPORTED = ["3.10", "pypy3.11", "3.11", "3.12", "3.13", "3.14"]
 LATEST = SUPPORTED[-1]
 
-nox.options.default_venv_backend = "uv|virtualenv"
+nox.options.default_venv_backend = "uv"
 nox.options.sessions = []
 
 
@@ -32,12 +24,27 @@ def session(default=True, python=LATEST, **kwargs):  # noqa: D103
     return _session
 
 
+def sync(session, group):
+    """
+    Populate the active session venv from a uv dependency group.
+    """
+    session.run_install(
+        "uv",
+        "sync",
+        "--active",
+        "--no-default-groups",
+        "--group",
+        group,
+        external=True,
+    )
+
+
 @session(python=SUPPORTED)
 def tests(session):
     """
     Run the test suite with a corresponding Python version.
     """
-    session.install(ROOT, "-r", REQUIREMENTS["tests"])
+    sync(session, "tests")
     session.run("pytest", *session.posargs, TESTS)
 
 
@@ -46,7 +53,7 @@ def build(session):
     """
     Build a distribution suitable for PyPI and check its validity.
     """
-    session.install("build", "twine")
+    sync(session, "packaging")
     with TemporaryDirectory() as tmpdir:
         session.run("python", "-m", "build", ROOT, "--outdir", tmpdir)
         session.run("twine", "check", "--strict", tmpdir + "/*")
@@ -57,7 +64,7 @@ def style(session):
     """
     Check Python code style.
     """
-    session.install("ruff")
+    sync(session, "style")
     session.run("ruff", "check", TESTS, __file__)
 
 
@@ -66,7 +73,7 @@ def typing(session):
     """
     Check the codebase using pyright by type checking the test suite.
     """
-    session.install("pyright", ROOT, "-r", REQUIREMENTS["tests"])
+    sync(session, "typing")
     session.run("pyright", TESTS)
 
 
@@ -88,7 +95,7 @@ def docs(session, builder):
     """
     Build the documentation using a specific Sphinx builder.
     """
-    session.install("-r", REQUIREMENTS["docs"])
+    sync(session, "docs")
     with TemporaryDirectory() as tmpdir_str:
         tmpdir = Path(tmpdir_str)
         argv = ["-n", "-T", "-W"]
@@ -112,28 +119,5 @@ def docs_style(session):
     """
     Check the documentation style.
     """
-    session.install(
-        "doc8",
-        "pygments",
-        "pygments-github-lexers",
-    )
+    sync(session, "docs-style")
     session.run("python", "-m", "doc8", "--config", PYPROJECT, DOCS)
-
-
-@session(default=False)
-def requirements(session):
-    """
-    Update the project's pinned requirements.
-
-    You should commit the result afterwards.
-    """
-    if session.venv_backend == "uv":
-        cmd = ["uv", "pip", "compile"]
-    else:
-        session.install("pip-tools")
-        cmd = ["pip-compile", "--resolver", "backtracking", "--strip-extras"]
-
-    for each, out in REQUIREMENTS_IN:
-        # otherwise output files end up with silly absolute path comments...
-        relative = each.relative_to(ROOT)
-        session.run(*cmd, "--upgrade", "--output-file", out, relative)
