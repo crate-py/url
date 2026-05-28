@@ -4,3 +4,4 @@
 # pushed. cargo-release exists here only to keep Cargo.toml, Cargo.lock, and
 # the git tag in lockstep.
 publish = false
+pre-release-commit-message = "Release {{crate_name}} version {{version}}"
