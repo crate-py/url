@@ -7,6 +7,8 @@ name = "url-py"
 description = "Python bindings to Rust's url crate (from Servo)"
 requires-python = ">=3.11"
 readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["data structures", "rust", "persistent"]
 authors = [
   { name = "Julian Berman", email = "Julian+url-py@GrayVines.com" },
@@ -14,7 +16,6 @@ authors = [
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Rust",
   "Programming Language :: Python :: 3.11",
