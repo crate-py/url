@@ -13,5 +13,5 @@ percent-encoding = "2"
 url = "2"
 
 [dependencies.pyo3]
-version = "0.28.3"
+version = "0.29.0"
 features = ["extension-module", "generate-import-lib"]
